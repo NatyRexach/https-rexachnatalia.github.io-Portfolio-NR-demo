@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <!-- Necesario para que se vea bien en el celular -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo · Natalia Rexach</title>
+  <meta name="description" content="Probá cómo le contesta el asistente de WhatsApp a los clientes de una panadería.">
+
+  <style>
+    /* ========== 1. MISMOS COLORES Y TIPOGRAFÍA QUE INDEX.HTML ========== */
+    :root {
+      --fondo: #f6f8f7;
+      --fondo-alt: #e9efec;
+      --tinta: #16302f;
+      --tinta-suave: #4a605e;
+      --acento: #d99a1e;
+      --linea: #c9d5d1;
+      --verde-enviado: #dcf3e2;   /* burbuja del cliente, estilo WhatsApp */
+      --letra-titulos: Georgia, "Times New Roman", serif;
+      --letra-texto: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    /* ========== 2. BASE ========== */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--letra-texto);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--tinta);
+      background: var(--fondo);
+    }
+    h1, h2 { font-family: var(--letra-titulos); line-height: 1.2; margin: 0 0 .6em; }
+    h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
+    p  { margin: 0 0 1em; max-width: 65ch; }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+    .contenedor { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+    header { border-bottom: 1px solid var(--linea); padding: 1rem 0; }
+    .encabezado-flex { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    .marca { font-family: var(--letra-titulos); font-weight: 700; font-size: 1.2rem; text-decoration: none; color: var(--tinta); }
+    nav a { color: var(--tinta-suave); text-decoration: none; font-size: .95rem; }
+    nav a:hover { text-decoration: underline; }
+
+    main { padding: 2.5rem 0 3.5rem; }
+
+    /* ========== 3. FRASES DE "ANTES" Y "DESPUÉS" ========== */
+    .frase-estado {
+      border-left: 4px solid var(--acento);
+      padding: .9rem 1rem;
+      background: var(--fondo-alt);
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+    .frase-estado strong { display: block; font-size: .85rem; text-transform: none; color: var(--tinta-suave); margin-bottom: .2rem; }
+
+    /* La frase de "después" arranca oculta: aparece cuando se usa la demo */
+    #frase-despues { display: none; }
+    #frase-despues.visible { display: block; animation: aparecer .4s ease; }
+    @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ========== 4. VENTANA DE CHAT ========== */
+    .telefono {
+      background: #fff;
+      border: 1px solid var(--linea);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(22, 48, 47, .08);
+    }
+    .barra-chat {
+      background: var(--tinta);
+      color: #fff;
+      padding: .8rem 1rem;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .barra-chat .punto { width: 10px; height: 10px; border-radius: 50%; background: #5bd97a; }
+
+    #ventana-chat {
+      min-height: 260px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      background: #f0efe9;
+    }
+    .burbuja { max-width: 80%; padding: .55rem .8rem; border-radius: 12px; font-size: .95rem; line-height: 1.4; }
+    .burbuja.cliente { align-self: flex-end; background: var(--verde-enviado); border-bottom-right-radius: 2px; }
+    .burbuja.bot { align-self: flex-start; background: #fff; border: 1px solid var(--linea); border-bottom-left-radius: 2px; }
+    .burbuja.escribiendo { color: var(--tinta-suave); font-style: italic; }
+
+    /* ========== 5. PREGUNTAS RÁPIDAS Y CAMPO DE TEXTO ========== */
+    .preguntas-rapidas { display: flex; flex-wrap: wrap; gap: .5rem; padding: .9rem 1rem 0; }
+    .chip {
+      background: var(--fondo-alt);
+      border: 1px solid var(--linea);
+      border-radius: 999px;
+      padding: .4rem .9rem;
+      font-size: .9rem;
+      cursor: pointer;
+      color: var(--tinta);
+    }
+    .chip:hover { background: #dfe7e3; }
+
+    .campo-mensaje {
+      display: flex;
+      gap: .5rem;
+      padding: 1rem;
+      border-top: 1px solid var(--linea);
+    }
+    #texto-cliente {
+      flex: 1;
+      padding: .6rem .8rem;
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      font-size: .95rem;
+      font-family: inherit;
+    }
+
+    /* ========== 6. BOTONES ========== */
+    .boton {
+      display: inline-block;
+      background: var(--tinta);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: .7rem 1.1rem;
+      border-radius: 8px;
+      border: none;
+      border-bottom: 4px solid var(--acento);
+      cursor: pointer;
+      font-size: .95rem;
+      font-family: inherit;
+    }
+    .boton:hover { background: #0f2221; }
+    .boton-secundario {
+      background: transparent;
+      color: var(--tinta-suave);
+      border: 1px solid var(--linea);
+      border-bottom: 1px solid var(--linea);
+      font-weight: 500;
+    }
+    .boton-secundario:hover { background: var(--fondo-alt); color: var(--tinta); }
+
+    .cierre-demo { text-align: center; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--linea); }
+    .cierre-demo p { margin-left: auto; margin-right: auto; }
+
+    footer { padding: 2rem 0; color: var(--tinta-suave); font-size: .9rem; text-align: center; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ========== ENCABEZADO ========== -->
+  <header>
+    <div class="contenedor encabezado-flex">
+      <a class="marca" href="index.html">Natalia Rexach</a>
+      <nav><a href="index.html">← Volver al inicio</a></nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="contenedor">
+
+      <h1>Demo: así contesta el WhatsApp de una panadería</h1>
+      <p>Este es un ejemplo con una panadería de barrio. Así quedaría tu WhatsApp con un asistente que responde las preguntas de siempre, sin que vos sueltes la masa.</p>
+
+      <!-- 1) ANTES, en una frase -->
+      <div class="frase-estado">
+        <strong>Antes</strong>
+        Son las 8 de la mañana, te llegan tres mensajes seguidos preguntando la hora y el precio de la docena, y vos tenés las manos en la masa.
+      </div>
+
+      <!-- 2) LA DEMO: dejame usarla -->
+      <div class="telefono">
+        <div class="barra-chat">
+          <span class="punto"></span>
+          Panadería La Espiga · asistente de WhatsApp
+        </div>
+
+        <div id="ventana-chat">
+          <div class="burbuja bot">¡Hola! Soy el asistente de Panadería La Espiga. Preguntame el horario, un precio o si hay algo para hoy.</div>
+        </div>
+
+        <div class="preguntas-rapidas">
+          <button class="chip" type="button" data-pregunta="¿A qué hora abren?">¿A qué hora abren?</button>
+          <button class="chip" type="button" data-pregunta="¿Cuánto sale la docena de facturas?">¿Cuánto sale la docena de facturas?</button>
+          <button class="chip" type="button" data-pregunta="¿Tienen tortas para hoy?">¿Tienen tortas para hoy?</button>
+          <button class="chip" type="button" data-pregunta="¿Hacen pedidos para retirar más tarde?">¿Hacen pedidos para retirar?</button>
+        </div>
+
+        <form class="campo-mensaje" id="form-mensaje">
+          <input type="text" id="texto-cliente" placeholder="Escribí una pregunta, como lo haría un cliente..." autocomplete="off">
+          <button class="boton" type="submit">Enviar</button>
+        </form>
+      </div>
+
+      <p style="margin-top:.8rem;">
+        <button class="boton boton-secundario" type="button" id="boton-reiniciar">Reiniciar demo</button>
+      </p>
+
+      <!-- 3) DESPUÉS, en una frase (aparece cuando usás la demo) -->
+      <div class="frase-estado" id="frase-despues">
+        <strong>Después</strong>
+        El asistente contesta en segundos, con tus horarios y precios, y si llega algo que no sabe, te avisa a vos para que lo respondas.
+      </div>
+
+      <!-- 4) CIERRE CON EL BOTÓN PEDIDO -->
+      <div class="cierre-demo">
+        <p>¿Lo ves claro?</p>
+        <a class="boton" href="index.html#reunion">¿Lo ves claro? Agendá 20 minutos y te armo la versión para tu negocio</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="contenedor">
+      Demo de ejemplo con datos ficticios. No reemplaza la versión armada para tu negocio.
+    </div>
+  </footer>
+
+  <script>
+    // ===== 1. BASE DE RESPUESTAS DE EJEMPLO (panadería ficticia) =====
+    // Cada respuesta tiene palabras clave para reconocer la pregunta del cliente.
+    var respuestas = [
+      {
+        claves: ['hora', 'abren', 'abierto', 'cierran', 'horario'],
+        texto: 'Abrimos de lunes a sábado de 7 a 20 hs, y los domingos de 8 a 13 hs.'
+      },
+      {
+        claves: ['docena', 'facturas', 'factura'],
+        texto: 'La docena de facturas sale $4.200. Si querés media docena, también hacemos.'
+      },
+      {
+        claves: ['torta', 'tortas'],
+        texto: 'Hoy tenemos torta de chocolate y de manzana. Si querés una especial, avisanos con un día de anticipación.'
+      },
+      {
+        claves: ['pedido', 'pedidos', 'retirar', 'encargo', 'encargar'],
+        texto: 'Sí, podés encargar y pasar a retirar cuando quieras. Contanos qué necesitás y el horario aproximado.'
+      },
+      {
+        claves: ['pan', 'pan casero', 'pan lactal'],
+        texto: 'Tenemos pan casero fresco todo el día. El pan lactal sale $2.100 la bolsa.'
+      },
+      {
+        claves: ['direccion', 'dirección', 'donde', 'dónde', 'ubicados'],
+        texto: 'Estamos en Belgrano 450, a dos cuadras de la plaza.'
+      }
+    ];
+
+    var respuestaDefault = 'Esa consulta todavía no la tengo cargada. Ya le aviso a Natalia para que te conteste en un rato.';
+
+    // ===== 2. ELEMENTOS DE LA PÁGINA =====
+    var ventanaChat = document.getElementById('ventana-chat');
+    var form = document.getElementById('form-mensaje');
+    var input = document.getElementById('texto-cliente');
+    var fraseDespues = document.getElementById('frase-despues');
+    var botonReiniciar = document.getElementById('boton-reiniciar');
+    var chips = document.querySelectorAll('.chip');
+
+    var yaUso = false; // controla si ya se mostró la frase de "después"
+
+    // Saca tildes para que el reconocimiento de palabras clave no falle por eso
+    function sinTildes(texto) {
+      return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function buscarRespuesta(pregunta) {
+      var preguntaLimpia = sinTildes(pregunta);
+      for (var i = 0; i < respuestas.length; i++) {
+        var coincide = respuestas[i].claves.some(function (clave) {
+          return preguntaLimpia.indexOf(sinTildes(clave)) !== -1;
+        });
+        if (coincide) { return respuestas[i].texto; }
+      }
+      return respuestaDefault;
+    }
+
+    function agregarBurbuja(texto, clase) {
+      var burbuja = document.createElement('div');
+      burbuja.className = 'burbuja ' + clase;
+      burbuja.textContent = texto;
+      ventanaChat.appendChild(burbuja);
+      ventanaChat.scrollTop = ventanaChat.scrollHeight;
+      return burbuja;
+    }
+
+    function enviarPregunta(pregunta) {
+      if (!pregunta.trim()) { return; }
+
+      agregarBurbuja(pregunta, 'cliente');
+
+      // Burbuja de "escribiendo..." para que se sienta real, y después la respuesta
+      var indicador = agregarBurbuja('escribiendo...', 'bot escribiendo');
+      setTimeout(function () {
+        indicador.remove();
+        agregarBurbuja(buscarRespuesta(pregunta), 'bot');
+
+        // 3) Mostrar la frase de "después" la primera vez que se usa la demo
+        if (!yaUso) {
+          yaUso = true;
+          fraseDespues.classList.add('visible');
+        }
+      }, 700);
+    }
+
+    // ===== 3. EVENTOS =====
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      enviarPregunta(input.value);
+      input.value = '';
+    });
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        enviarPregunta(chip.getAttribute('data-pregunta'));
+      });
+    });
+
+    botonReiniciar.addEventListener('click', function () {
+      ventanaChat.innerHTML = '<div class="burbuja bot">¡Hola! Soy el asistente de Panadería La Espiga. Preguntame el horario, un precio o si hay algo para hoy.</div>';
+      fraseDespues.classList.remove('visible');
+      yaUso = false;
+    });
+  </script>
+
+</body>
+</html>
