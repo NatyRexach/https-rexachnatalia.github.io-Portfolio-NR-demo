@@ -114,7 +114,7 @@
         <h1>Un asistente que contesta tu WhatsApp mientras vos atendés el mostrador</h1>
         <p>Soy Natalia Rexach, de Luque. Me dedico a que las panaderías dejen de contestar el mismo mensaje de WhatsApp cincuenta veces por día: horarios, precios, encargos y "¿hay?".</p>
         <p>Me especializo en detectar qué le impide a una panificadora atender bien sin sobrecargar al dueño ni a los empleados, y en sacarles esa parte de encima.</p>
-        <a class="boton" href="#reunion">Agendá una reunión de 20 minutos</a>
+        <a class="boton" href="mailto:rexrecursosdigitales@gmail.com?subject=Consulta%20desde%20tu%20perfil">Contactame por correo</a>
       </div>
     </section>
 
@@ -192,7 +192,7 @@
         <h2>Hablemos 20 minutos</h2>
         <p>[Placeholder] Una frase corta que invite a agendar, sin compromiso.</p>
         <!-- PENDIENTE: reemplazar href="#reunion" por el link real de agenda cuando lo tengas -->
-        <a class="boton" id="boton-agenda" href="#reunion">Agendá una reunión de 20 minutos</a>
+        <a class="boton" href="mailto:rexrecursosdigitales@gmail.com?subject=Consulta%20desde%20tu%20perfil">Contactame por correo</a>
       </div>
     </section>
 
@@ -209,12 +209,6 @@
     // Pone el año actual en el pie de página
     document.getElementById('anio').textContent = new Date().getFullYear();
 
-    // Todavía no hay link de agenda: mientras siga apuntando a "#reunion", el botón no hace nada raro.
-    // Cuando pongas el link real (https://...), este bloque deja de actuar solo.
-    var botonAgenda = document.getElementById('boton-agenda');
-    botonAgenda.addEventListener('click', function (e) {
-      if (botonAgenda.getAttribute('href') === '#reunion') { e.preventDefault(); }
-    });
   </script>
 
 </body>
